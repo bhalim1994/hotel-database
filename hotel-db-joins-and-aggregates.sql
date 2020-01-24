@@ -1,35 +1,5 @@
 --
-SET ECHO ON
-SET TAB OFF
---
---
-SPOOL C:\WORK\COMP2714\Asn2_WuL_HalimB.txt
---
--- ---------------------------------------------------------
---  COMP 2714 
---  SET 2B
---  Assignment Asn02
---
---  Wu, Leon   	   A01166396
---  email: lwu89@my.bcit.ca
---
---  Halim, Benedict A01185587
---  email: bhalim2@my.bcit.ca
---
--- ---------------------------------------------------------
---
-ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD';
---
-SELECT SYSDATE
-FROM DUAL;
---
-DROP TABLE Booking;
-DROP TABLE Guest;
-DROP TABLE Room;
-DROP TABLE Hotel;
---
--- Create Sample Tables for assignment
--- NOTE: the following is NOT necessary good practices!
+-- Create sample tables
 --
 CREATE TABLE Hotel
 (hotelNo         NUMBER(4)       NOT NULL
@@ -420,7 +390,10 @@ INSERT INTO Booking
 --
 COMMIT;
 --
--- Q1 6.10
+-- For all hotels in city Paris in France, list hotel name, hotelAddress, room type 
+-- and price of all Single, Double or Family rooms with a price below 100.00 per 
+-- night, in descending order of hotelName, ascending order of price and descending 
+-- order of type. List each result entry only once.
 --
 SELECT DISTINCT h.hotelName, h.hotelAddress, r.type, r.price 
 	FROM Room r
@@ -432,7 +405,10 @@ SELECT DISTINCT h.hotelName, h.hotelAddress, r.type, r.price
 	AND type in ('Single', 'Double', 'Family') 
 	ORDER BY hotelName DESC, price ASC, type DESC;
 --
--- Q2 6.11
+-- For hotels in city Surrey in Canada, list the bookings for which no dateTo has 
+-- been specified. List the hotelName, hotelAddress, room number, dateFrom and 
+-- dateTo. Note: Hotels in South Surrey and North Surrey should be excluded 
+-- explicitly. Do not rely on specific sample data instances.
 --
 SELECT h.hotelName, h.hotelAddress, b.roomNo, b.dateFrom, b.dateTo
 	FROM Booking b
@@ -444,7 +420,8 @@ SELECT h.hotelName, h.hotelAddress, b.roomNo, b.dateFrom, b.dateTo
 	AND h.hotelAddress NOT LIKE '%North Surrey%'
 	AND b.dateTo IS NULL;
 --
--- Q3 6.13 a
+-- What is the average price of a room for each hotel? 
+-- List it with the hotelName and in hotelName order.
 --
 SELECT h.hotelName, AVG(r.price) AS "Avg.Price"
    FROM Room r
@@ -453,7 +430,9 @@ SELECT h.hotelName, AVG(r.price) AS "Avg.Price"
    GROUP BY h.hotelName
    ORDER BY h.hotelName ASC;
 --
--- Q3 6.13 b
+-- What is the average price of a room that is not Deluxe, for each hotel in each 
+-- country? List it with the country and hotelName, and in country then hotelName 
+-- order.
 --
 SELECT h.country, h.hotelName, AVG(r.price) AS "Avg.Price"
    FROM Room r
@@ -463,7 +442,10 @@ SELECT h.country, h.hotelName, AVG(r.price) AS "Avg.Price"
    GROUP BY h.country, h.hotelName
    ORDER BY h.country ASC, h.hotelName ASC;
 --
--- Q4 6.14
+-- Do this for each hotel and in one single query. List the total revenue with the 
+-- hotelName, and only if the total revenue is between $500 to $1000. 
+-- List in hotelName order.
+--
 -- Note: We define revenue from rooms that have been 
 -- booked since unbooked rooms do NOT create revenue.
 --
@@ -478,7 +460,10 @@ SELECT h.hotelName, SUM(r.price) AS "Total Revenue"
 	GROUP BY h.hotelName
 	ORDER BY h.hotelName ASC;
 --
--- Q5 6.16
+-- List the type and price of all rooms at the hotels with 'Grosvenor' in name, 
+-- including the number of rooms for each possible combination of type and price. 
+-- List only if the number of rooms for each type and price combination is greater 
+-- than 3.
 --
 SELECT h.hotelName, r.price, r.type, COUNT(*) AS "Count"
    FROM Room r
@@ -488,7 +473,8 @@ SELECT h.hotelName, r.price, r.type, COUNT(*) AS "Count"
    GROUP BY h.hotelName, r.price, r.type
    HAVING COUNT(*) > 3;
 --
--- Q.6 6.17
+-- Include also the roomNo in the output. Include all guest information in the 
+-- output. Use 2020-01-21 as the current date.
 --
 SELECT g.guestNo, g.guestName, g.guestAddress, g.country, b.roomNo
    FROM Booking b
@@ -500,7 +486,8 @@ SELECT g.guestNo, g.guestName, g.guestAddress, g.country, b.roomNo
    AND b.dateFrom <= DATE'2020-01-21'
    AND (b.dateTo IS NULL OR b.dateTo >= DATE'2020-01-21');
 --
--- Q.7 6.19
+-- Do this question for each of the hotels with 'Grosvenor' in name. 
+-- Use 2020-01-21 as the current date.
 --
 SELECT h.hotelName, SUM(r.price) AS "Total Income"
    FROM Room r
@@ -514,7 +501,9 @@ SELECT h.hotelName, SUM(r.price) AS "Total Income"
    AND (b.dateTo IS NULL OR b.dateTo >= DATE'2020-01-21')
    GROUP BY h.hotelName;
 --
--- Q.8 6.19
+-- What is the total income for each room type from bookings for each hotel 
+-- (listing hotel names, not just hotelNo) today? Use 2020-01-21 as today's date. 
+-- List in ascending order of hotel name and room type.
 --
 SELECT h.hotelNo, h.hotelName, r.type, SUM(r.price) AS "Total Income"
    FROM Booking b
@@ -528,7 +517,8 @@ SELECT h.hotelNo, h.hotelName, r.type, SUM(r.price) AS "Total Income"
    GROUP BY h.hotelNo, h.hotelName, r.type
    ORDER BY h.hotelName ASC, r.type ASC;
 --
--- Q.9
+-- List the new hotels that are still under construction, 
+-- i.e. no room data in the Room table as yet for these hotels.
 --
 SELECT h.hotelNo, h.hotelName, h.hotelAddress
    FROM Hotel h
@@ -538,7 +528,10 @@ SELECT h.hotelNo, h.hotelName, h.hotelAddress
    HAVING COUNT(*) = 1
    ORDER BY h.hotelNo ASC;
 -- 
--- Q10
+-- What is the percentage of hotels still under construction? List the total number 
+-- of hotels, number of hotels completed, the number of hotels under construction, 
+-- and the percentage of hotels under construction. (Note: NO SUBQUERY; use OUTER 
+-- JOIN with aggregates.)
 --
 SELECT 
 	COUNT(DISTINCT h.hotelNo)
@@ -552,5 +545,3 @@ SELECT
 	FROM Hotel h
 		LEFT JOIN Room r 
 			ON h.hotelNo = r.hotelNo;
---
-SPOOL OFF
